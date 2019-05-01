@@ -134,10 +134,12 @@ This file is part of DarkStar-server source code.
 #include "packets/position.h"
 #include "packets/release.h"
 #include "packets/release_special.h"
+#include "packets/roe_current.h"
 #include "packets/server_ip.h"
 #include "packets/server_message.h"
 #include "packets/shop_appraise.h"
 #include "packets/shop_buy.h"
+#include "packets/sparks_update.h"
 #include "packets/status_effects.h"
 #include "packets/stop_downloading.h"
 #include "packets/synth_suggestion.h"
@@ -5916,6 +5918,34 @@ void SmallPacket0x10B(map_session_data_t* session, CCharEntity* PChar, CBasicPac
 
 /************************************************************************
 *                                                                        *
+*  Start Records of Eminence Quest                                       *
+*                                                                        *
+************************************************************************/
+
+void SmallPacket0x10C(map_session_data_t* session, CCharEntity* PChar, CBasicPacket data)
+{
+    // TODO: write code that adds ROE quest to PChar structure and saves to MySQL
+    // charutils::StartROEQuest(PChar, ROEquestID);
+    PChar->pushPacket(new CROECurrentPacket(PChar));
+    return;
+}
+
+/************************************************************************
+*                                                                        *
+*  Cancel Records of Eminence Quest                                      *
+*                                                                        *
+************************************************************************/
+
+void SmallPacket0x10D(map_session_data_t* session, CCharEntity* PChar, CBasicPacket data)
+{
+    // TODO: write code that removes ROE quest from PChar structure and saves to MySQL
+    // charutils::CancelROEQuest(PChar, ROEquestID);
+    PChar->pushPacket(new CROECurrentPacket(PChar));
+    return;
+}
+
+/************************************************************************
+*                                                                        *
 *  Request Currency1 tab                                                  *
 *                                                                        *
 ************************************************************************/
@@ -5960,6 +5990,18 @@ void SmallPacket0x111(map_session_data_t* session, CCharEntity* PChar, CBasicPac
 {
     charutils::SetStyleLock(PChar, data.ref<uint8>(0x04));
     PChar->pushPacket(new CCharAppearancePacket(PChar));
+    return;
+}
+
+/************************************************************************
+*                                                                        *
+*  RoE Quest Log Request                                                 *
+*                                                                        *
+************************************************************************/
+
+void SmallPacket0x112(map_session_data_t* session, CCharEntity* PChar, CBasicPacket data)
+{
+    charutils::SendROEQuestLog(PChar);
     return;
 }
 
@@ -6021,6 +6063,18 @@ void SmallPacket0x114(map_session_data_t* session, CCharEntity* PChar, CBasicPac
 void SmallPacket0x115(map_session_data_t* session, CCharEntity* PChar, CBasicPacket data)
 {
     PChar->pushPacket(new CCurrencyPacket2(PChar));
+    return;
+}
+
+/************************************************************************
+*                                                                        *
+*  Request Sparks Update                                                 *
+*                                                                        *
+************************************************************************/
+
+void SmallPacket0x117(map_session_data_t* session, CCharEntity* PChar, CBasicPacket data)
+{
+    PChar->pushPacket(new CSparksUpdatePacket(PChar));
     return;
 }
 
@@ -6133,13 +6187,18 @@ void PacketParserInitialize()
     PacketSize[0x109] = 0x00; PacketParser[0x109] = &SmallPacket0x109;
     PacketSize[0x10A] = 0x06; PacketParser[0x10A] = &SmallPacket0x10A;
     PacketSize[0x10B] = 0x00; PacketParser[0x10B] = &SmallPacket0x10B;
-    PacketSize[0x10F] = 0x02; PacketParser[0x10F] = &SmallPacket0x10F;
+    PacketSize[0x10C] = 0x00; PacketParser[0x10C] = &SmallPacket0x10C;   // Start ROE Quest
+    PacketSize[0x10D] = 0x00; PacketParser[0x10D] = &SmallPacket0x10D;   // Cancel ROE Quest
+    PacketSize[0x10F] = 0x02; PacketParser[0x10F] = &SmallPacket0x10F;   // Currencies request
     PacketSize[0x110] = 0x0A; PacketParser[0x110] = &SmallPacket0x110;
-    PacketSize[0x111] = 0x00; PacketParser[0x111] = &SmallPacket0x111; // Lock Style Request
-    PacketSize[0x112] = 0x00; PacketParser[0x112] = &SmallPacket0xFFF;
+    PacketSize[0x111] = 0x00; PacketParser[0x111] = &SmallPacket0x111;   // Lock Style Request
+    PacketSize[0x112] = 0x00; PacketParser[0x112] = &SmallPacket0x112;   // RoE Quest Log Request
     PacketSize[0x113] = 0x06; PacketParser[0x113] = &SmallPacket0x113;
     PacketSize[0x114] = 0x00; PacketParser[0x114] = &SmallPacket0x114;
-    PacketSize[0x115] = 0x02; PacketParser[0x115] = &SmallPacket0x115;
+    PacketSize[0x115] = 0x02; PacketParser[0x115] = &SmallPacket0x115;   // Currencies2 request
+    PacketSize[0x116] = 0x00; PacketParser[0x116] = &SmallPacket0xFFF;   // Sent by client when opening Status>Unity menu
+    PacketSize[0x117] = 0x00; PacketParser[0x117] = &SmallPacket0x117;   // Sent by client when requesting Unity Ranking information
+    PacketSize[0x118] = 0x00; PacketParser[0x118] = &SmallPacket0xFFF;   // Sent by client when joining/leaving Unity chat channel?
 }
 
 /************************************************************************

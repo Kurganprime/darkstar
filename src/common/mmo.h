@@ -205,7 +205,13 @@ struct campaignlog_t
 	bool   complete[512];
 };
 
-struct nameflags_t 
+struct roe_current_t
+{
+    uint16 questID;
+    uint32 progress;
+};
+
+struct nameflags_t
 {
 	union {
 		struct {

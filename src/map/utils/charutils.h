@@ -37,7 +37,6 @@ class CAbility;
 
 namespace charutils
 {
-
     void	LoadExpTable();
     void	LoadChar(CCharEntity* PChar);
     void    LoadSpells(CCharEntity* PChar);
@@ -45,6 +44,7 @@ namespace charutils
     void    LoadEquip(CCharEntity* PChar);
 
     void	SendQuestMissionLog(CCharEntity* PChar);
+    void    SendROEQuestLog(CCharEntity* PChar);
     void	SendKeyItems(CCharEntity* PChar);
     void	SendInventory(CCharEntity* PChar);
 
@@ -134,6 +134,8 @@ namespace charutils
     void	SaveCharPosition(CCharEntity* PChar);				        // сохраняем позицию персонажа
     void	SaveMissionsList(CCharEntity* PChar);                       // Save the missions list
     void	SaveQuestsList(CCharEntity* PChar);					        // сохраняем список ксевтов
+    void    SaveROECurrent(CCharEntity* PChar);                    // Save Records of Eminence Current Quest Data
+    void    SaveROEComplete(CCharEntity* PChar);                   // Save Records of Eminence Objective List Data
     void    SaveFame(CCharEntity* PChar);                               // Save area fame / reputation
     void	SaveZonesVisited(CCharEntity* PChar);				        // сохраняем посещенные зоны
     void	SaveKeyItems(CCharEntity* PChar);					        // сохраняем ключевые предметы
@@ -179,6 +181,10 @@ namespace charutils
     void    SetPoints(CCharEntity* PChar, const char* type, int32 amount);
     int32   GetPoints(CCharEntity* PChar, const char* type);
     std::string GetConquestPointsName(CCharEntity* PChar);
+
+    void  StartROEQuest(CCharEntity* PChar, uint16 questID);
+//    void  CancelROEQuest(CCharEntity* PChar, uint16 questID);
+
     void    SendToZone(CCharEntity* PChar, uint8 type, uint64 ipp);
     void    HomePoint(CCharEntity* PChar);
     bool    AddWeaponSkillPoints(CCharEntity*, SLOTTYPE, int);

@@ -63,7 +63,10 @@ This file is part of DarkStar-server source code.
 #include "../packets/message_special.h"
 #include "../packets/message_standard.h"
 #include "../packets/quest_mission_log.h"
+#include "../packets/roe_complete.h"
+#include "../packets/roe_current.h"
 #include "../packets/server_ip.h"
+#include "../packets/sparks_update.h"
 
 #include "../ability.h"
 #include "../alliance.h"
@@ -355,7 +358,9 @@ namespace charutils
             "playtime,"             // 24
             "campaign_allegiance,"  // 25
             "isstylelocked,"        // 26
-            "moghancement "         // 27
+            "moghancement,"         // 27
+            "roe_current,"          // 28
+            "roe_complete "       // 29
             "FROM chars "
             "WHERE charid = %u";
 
@@ -434,6 +439,17 @@ namespace charutils
             PChar->profile.campaign_allegiance = (uint8)Sql_GetIntData(SqlHandle, 25);
             PChar->setStyleLocked(Sql_GetIntData(SqlHandle, 26) == 1 ? true : false);
             PChar->SetMoghancement(Sql_GetUIntData(SqlHandle, 27));
+
+            length = 0;
+            char* roe_current = nullptr;
+            Sql_GetData(SqlHandle, 28, &roe_current, &length);
+            memcpy(&PChar->m_roe_current, roe_current, (length > sizeof(PChar->m_roe_current) ? sizeof(PChar->m_roe_current) : length));
+
+            length = 0;
+            char* roe_complete = nullptr;
+            Sql_GetData(SqlHandle, 29, &roe_complete, &length);
+            memcpy(&PChar->m_roe_complete, roe_complete, (length > sizeof(PChar->m_roe_complete) ? sizeof(PChar->m_roe_complete) : length));
+            
         }
 
         LoadSpells(PChar);
@@ -1061,6 +1077,27 @@ namespace charutils
         // Current Nation, Zilart, COP, Add-On, SOA, and ROV missions are all sent in a shared, single packet.
         // So sending this packet updates multiple Mission logs at once.
         PChar->pushPacket(new CQuestMissionLogPacket(PChar, MISSION_ZILART, LOG_MISSION_CURRENT));
+    }
+
+    /************************************************************************
+    *                                                                       *
+    *  Send current Records of Eminence Data                                *
+    *  Sends Sparks Info, Eminence Info, and ROE Quest Log Data             *
+    *                                                                       *
+    ************************************************************************/
+
+    void SendROEQuestLog(CCharEntity* PChar)
+    {
+        PChar->pushPacket(new CSparksUpdatePacket(PChar));
+        PChar->pushPacket(new CROECurrentPacket(PChar));
+
+        // split up the objective list data into multiple packets
+        std::bitset<1024> bitslice;
+        for (uint8 sequence = 0; sequence < (MAX_ROE_QUESTS/1024); ++sequence)
+        {
+            std::bitset<1024> bitslice(PChar->m_roe_complete.to_string().substr((PChar->m_roe_complete.to_string().length() - (1024 * (sequence + 1))), 1024));
+            PChar->pushPacket(new CROECompletePacket(bitslice, sequence));
+        }
     }
 
     /************************************************************************
@@ -3786,6 +3823,55 @@ namespace charutils
             PChar->id);
     }
 
+    
+    /************************************************************************
+    *                                                                       *
+    *  Save the ROE Active Quest Data to MySQL                              *
+    *                                                                       *
+    ************************************************************************/
+    
+    void SaveROECurrent(CCharEntity* PChar)
+    {
+        // TODO: write code to store the ROE quest list to MySQL
+        //       update .sql base file for new tables/columns
+        const char* Query =
+            "UPDATE chars "
+            "SET "
+            "roe_current = '%s' "
+            "WHERE charid = %u;";
+
+        char roe_current[sizeof(PChar->m_roe_current) * 2 + 1];
+        Sql_EscapeStringLen(SqlHandle, roe_current, (const char*)PChar->m_roe_current, sizeof(PChar->m_roe_current));
+
+        Sql_Query(SqlHandle, Query,
+            roe_current,
+            PChar->id);
+    }
+    
+    /************************************************************************
+    *                                                                       *
+    *  Save the ROE Objective List Data to MySQL                            *
+    *                                                                       *
+    ************************************************************************/
+    
+    void SaveROEComplete(CCharEntity* PChar)
+    {
+        // TODO: write code to store the ROE quest list to MySQL
+        //       update .sql base file for new tables/columns
+        const char* Query =
+            "UPDATE chars "
+            "SET "
+            "roe_complete = '%s' "
+            "WHERE charid = %u;";
+
+        char roe_complete[sizeof(PChar->m_roe_complete) * 2 + 1];
+        Sql_EscapeStringLen(SqlHandle, roe_complete, (const char*)&PChar->m_roe_complete, sizeof(PChar->m_roe_complete));
+
+        Sql_Query(SqlHandle, Query,
+            roe_complete,
+            PChar->id);
+    }
+    
     /************************************************************************
     *                                                                       *
     *  Сохраняем список квестов                                             *
@@ -4842,6 +4928,76 @@ namespace charutils
         }
     }
 
+    void StartROEQuest(CCharEntity* PChar, uint16 questID)
+    {
+        if (questID < MAX_ROE_QUESTS)
+        {
+            uint8  slot = 0;                                            // initialize index variable for loop
+            bool   active = false;                                      // boolean flag for when quest is found or assigned to list
+
+            while (slot < MAX_ROE_ACTIVE && !active) {                  // loop while we're in the current list range and quest hasn't been added or found yet
+                if (PChar->m_roe_current[slot].questID == questID) { // found the quest already in the list, display an error message
+                    ShowError(CL_RED"StartROEQuest: ROE QuestID %i is already active\n" CL_RESET, questID);
+                    active = true;                                      // flag it active to exit loop
+                }
+                if (PChar->m_roe_current[slot].questID == 0)            // position is empty
+                {
+                    PChar->m_roe_current[slot].questID = questID;    // add ROE quest to this position
+                    PChar->m_roe_current[slot].progress = 0;            // initialize ROE quest progress to zero
+                    PChar->pushPacket(new CROECurrentPacket(PChar));    // push a packet update back to the client with the updated list
+                    charutils::SaveROECurrent(PChar);
+                    charutils::SaveROEComplete(PChar);
+                    active = true;                                      // flag it active to exit loop
+                }
+                ++slot;
+            }
+            if (slot == MAX_ROE_ACTIVE && !active)                      // if we went all the way through the loop and we hit the last slot but didn't find an empty slot
+                                                                        // or the quest already in the list, then the list is full and we show an error
+                ShowError(CL_RED"StartROEQuest: ROE Current Quest List is full\n" CL_RESET);
+        }
+        else
+        {
+            ShowError(CL_RED"StartROEQuest: ROE QuestID %i is invalid\n" CL_RESET, questID);
+        }
+        return;
+    }
+/*
+    void CancelROEQuest(CCharEntity* PChar, uint16 questID)
+    {
+        if (questID < MAX_ROE_QUESTS)
+        {
+            uint8  slot = 0;                                            // initialize loop index variable
+            bool   deleted = false;                                     // boolean flag for when quest is found or assigned to list
+
+            while (slot < MAX_ROE_ACTIVE && !deleted) {                 // loop while we're in the current list range and quest hasn't been deleted or found yet
+                if (PChar->m_roe_current[slot].questID == questID) {    // found the quest in the list
+                    for (uint8 i = slot; i < MAX_ROE_ACTIVE; ++i) {     // shift remaining items in the list up one position
+                        if (slot < MAX_ROE_ACTIVE - 1) {                // shift values as long as we're not in the last slot
+                            PChar->m_roe_current[slot].questID = PChar->m_roe_current[slot + 1].questID;
+                            PChar->m_roe_current[slot].progress = PChar->m_roe_current[slot + 1].progress;
+                        }
+                        if (slot == MAX_ROE_ACTIVE - 1) {               // if we're in the last slot, just clear the data to zero
+                            PChar->m_roe_current[slot].questID = 0;
+                            PChar->m_roe_current[slot].progress = 0;
+                        }
+                    }
+                    deleted = true;                                     // flag it deleted to exit loop
+                    charutils::SaveROEComplete(PChar);
+                    charutils::SaveROECurrent(PChar);
+                }
+                ++slot;
+            }
+            if (slot == MAX_ROE_ACTIVE && !deleted)                     // if we went all the way through the loop and we hit the last slot but didn't find the quest
+                                                                        // show an error message
+                ShowError(CL_RED"CancelROEQuest: ROE QuestID %i is not active\n" CL_RESET, questID);
+        }
+        else
+        {
+            ShowError(CL_RED"CancelROEQuest: ROE QuestID %i is invalid\n" CL_RESET, questID);
+        }
+        return;
+    }
+*/
     void SendToZone(CCharEntity* PChar, uint8 type, uint64 ipp)
     {
         if (type == 2)

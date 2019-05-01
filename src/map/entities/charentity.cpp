@@ -82,6 +82,13 @@
 
 CCharEntity::CCharEntity()
 {
+    // begin temp vars for Records of Eminence - data is volatile until mysql tables and code are added
+    // end   temp vars for Records of Eminence
+
+    // begin permanent vars for Records of Eminence
+    memset(&m_roe_current, 0, sizeof(m_roe_current));
+    // end   permanent vars for Records of Eminence
+
     objtype = TYPE_PC;
     m_EcoSystem = SYSTEM_HUMANOID;
 

@@ -40,6 +40,9 @@ This file is part of DarkStar-server source code.
 #define MAX_MISSIONAREA	 15
 #define MAX_MISSIONID    226
 
+#define MAX_ROE_ACTIVE    30
+#define MAX_ROE_QUESTS    4096
+
 class CTrustEntity;
 
 struct jobs_t
@@ -163,6 +166,11 @@ typedef std::vector<EntityID_t> BazaarList_t;
 class CCharEntity : public CBattleEntity
 {
 public:
+
+    // begin vars for Records of Eminence                   // volatile data here until mysql code is completed
+    roe_current_t           m_roe_current[MAX_ROE_ACTIVE];               // Records of Eminence quest data
+    std::bitset<4096>       m_roe_complete;
+    // end   vars for Records of Eminence
 
     jobs_t					jobs;							// доступрые профессии персонажа
     keyitems_t				keys;							// таблица ключевых предметов

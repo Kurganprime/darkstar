@@ -887,6 +887,15 @@
     <ClInclude Include="..\..\src\map\packets\trust_sync.h">
       <Filter>Header Files\packets</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\map\packets\roe_complete.h">
+      <Filter>Header Files\packets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\map\packets\roe_current.h">
+      <Filter>Header Files\packets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\map\packets\sparks_update.h">
+      <Filter>Header Files\packets</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\map\ability.cpp">
@@ -1626,6 +1635,15 @@
     </ClCompile>
     <ClCompile Include="..\..\src\map\timetriggers.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\map\packets\roe_complete.cpp">
+      <Filter>Source Files\packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\map\packets\roe_current.cpp">
+      <Filter>Source Files\packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\map\packets\sparks_update.cpp">
+      <Filter>Source Files\packets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
