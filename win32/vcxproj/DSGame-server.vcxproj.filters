@@ -872,9 +872,6 @@
     <ClInclude Include="..\..\src\map\packets\map_marker.h">
       <Filter>Source Files\packets</Filter>
     </ClInclude>
-    <ClInclude Include="timetriggers.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\map\timetriggers.h">
       <Filter>Header Files</Filter>
     </ClInclude>

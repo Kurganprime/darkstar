@@ -182,8 +182,9 @@ namespace charutils
     int32   GetPoints(CCharEntity* PChar, const char* type);
     std::string GetConquestPointsName(CCharEntity* PChar);
 
-    void  StartROEQuest(CCharEntity* PChar, uint16 questID);
-//    void  CancelROEQuest(CCharEntity* PChar, uint16 questID);
+    void    AddROEObjective(CCharEntity* PChar, uint16 objectiveID);
+    void    DeleteROEObjective(CCharEntity* PChar, uint16 objectiveID);
+    void    CompleteROEObjective(CCharEntity* PChar, uint16 objectiveID);
 
     void    SendToZone(CCharEntity* PChar, uint8 type, uint64 ipp);
     void    HomePoint(CCharEntity* PChar);

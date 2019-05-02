@@ -33,15 +33,21 @@ CROECurrentPacket::CROECurrentPacket(CCharEntity* PChar)
     this->type = 0x11;
     this->size = 0x83;
 
-    uint16 progress = 0;
     bool endoflist = false;
+
+    ShowDebug(CL_CYAN"CROECurrentPacket: Assembling ROE Current objective list for packet\n" CL_RESET);
 
     uint8 slot = 0;
     while (slot < MAX_ROE_ACTIVE && !endoflist) {
-        if (PChar->m_roe_current[slot].questID == 0) // if questID is zero, then we've reached the end of the active quest list
+        if (PChar->m_roe_current[slot].objectiveID == 0) { // if questID is zero, then we've reached the end of the active quest list
+            ShowDebug(CL_CYAN"CROECurrentPacket: While: Reached end of list at slot number %i\n" CL_RESET, slot);
             endoflist = true;
-        else                                         // otherwise, populate the quest data found into the packet
-            data[(slot * 4) + 4] = PChar->m_roe_current[slot].questID | (PChar->m_roe_current[slot].progress << 12); // quest ID uses lowest 12 bits; progress in upper 20 bits
+        }
+        else {                                         // otherwise, populate the quest data found into the packet
+            ShowDebug(CL_CYAN"CROECurrentPacket: While: Slot %i: Writing objective ID %i with progress %i\n" CL_RESET, slot, PChar->m_roe_current[slot].objectiveID, PChar->m_roe_current[slot].progress);
+            data[(slot * 4) + 4] = PChar->m_roe_current[slot].objectiveID | (PChar->m_roe_current[slot].progress << 12); // quest ID uses lowest 12 bits; progress in upper 20 bits
+        }
+        ++slot;
     }
 
     ref<uint32>(0x100) = 0; // limited time quest ID and progress, setting statically to zero for now

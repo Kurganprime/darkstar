@@ -34,6 +34,8 @@ CREATE TABLE `chars` (
   `assault` blob,
   `campaign` blob,
   `quests` blob,
+  `roe_current` blob,
+  `roe_complete` blob,
   `keyitems` blob,
   `set_blue_spells` blob,
   `abilities` blob,

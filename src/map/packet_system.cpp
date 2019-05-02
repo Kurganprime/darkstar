@@ -5924,9 +5924,10 @@ void SmallPacket0x10B(map_session_data_t* session, CCharEntity* PChar, CBasicPac
 
 void SmallPacket0x10C(map_session_data_t* session, CCharEntity* PChar, CBasicPacket data)
 {
-    // TODO: write code that adds ROE quest to PChar structure and saves to MySQL
-    // charutils::StartROEQuest(PChar, ROEquestID);
-    PChar->pushPacket(new CROECurrentPacket(PChar));
+    uint16 objectiveID = data.ref<uint16>(0x04);
+
+    ShowDebug(CL_CYAN"SmallPacket0x10C: Start ROE Objective ID %i request received\n" CL_RESET, objectiveID);
+    charutils::AddROEObjective(PChar, objectiveID);
     return;
 }
 
@@ -5939,8 +5940,10 @@ void SmallPacket0x10C(map_session_data_t* session, CCharEntity* PChar, CBasicPac
 void SmallPacket0x10D(map_session_data_t* session, CCharEntity* PChar, CBasicPacket data)
 {
     // TODO: write code that removes ROE quest from PChar structure and saves to MySQL
-    // charutils::CancelROEQuest(PChar, ROEquestID);
-    PChar->pushPacket(new CROECurrentPacket(PChar));
+    uint16 objectiveID = data.ref<uint16>(0x04);
+
+    ShowDebug(CL_CYAN"SmallPacket0x10D: Cancel ROE Objective ID %i request received\n" CL_RESET, objectiveID);
+    charutils::DeleteROEObjective(PChar, objectiveID);
     return;
 }
 

@@ -298,6 +298,14 @@ public:
     int32 hasCompletedQuest(lua_State*);    // Checks if quest has been completed
     int32 completeQuest(lua_State*);        // Set a quest status to complete
 
+    // Records of Eminence Start
+    // NOTE: you can only start an ROE objective from the quests menu in the client, so no function for it has been made.
+    int32 delROE(lua_State*);      // Remove ROE objective from the current list
+    int32 getROEStatus(lua_State*);         // Get ROE objective status
+    int32 hasCompletedROE(lua_State*);      // Check if ROE objective has been completed
+    int32 completeROE(lua_State*);
+    // Records of Eminence End
+
     int32 addMission(lua_State*);           // Add Mission
     int32 delMission(lua_State*);           // Delete Mission from Mission Log
     int32 getCurrentMission(lua_State*);    // Gets the current mission

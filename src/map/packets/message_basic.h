@@ -126,7 +126,7 @@ enum MSGBASIC_ID : uint16
 	/* DNC */
 	MSGBASIC_NO_FINISHINGMOVES		= 524,
 
-	/* DEBUG MESSAGES */
+    /* DEBUG MESSAGES */
 	MSGBASIC_DEBUG_RESISTED_SPELL	= 66, /* Debug: Resisted spell! */
 	MSGBASIC_DEBUG_RECEIVED_STATUS	= 73, /* Debug: <target>'s status is now .. */
 	MSGBASIC_DEBUG_RECOVERED_STATUS	= 74, /* Debug: <target> recovers from .. */

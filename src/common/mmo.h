@@ -207,7 +207,7 @@ struct campaignlog_t
 
 struct roe_current_t
 {
-    uint16 questID;
+    uint16 objectiveID;
     uint32 progress;
 };
 

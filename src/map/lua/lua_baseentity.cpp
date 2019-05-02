@@ -6111,6 +6111,137 @@ inline int32 CLuaBaseEntity::completeQuest(lua_State *L)
 }
 
 /************************************************************************
+*  Function: delROE()
+*  Purpose : Deletes an ROE objective from a character's current objectives list
+*  Example : player:delROEObjective(FIRST_STEP_FORWARD)
+*  Notes   : Clears all progress for the objective
+************************************************************************/
+
+inline int32 CLuaBaseEntity::delROE(lua_State* L)
+{
+    DSP_DEBUG_BREAK_IF(m_PBaseEntity == nullptr);
+    DSP_DEBUG_BREAK_IF(m_PBaseEntity->objtype != TYPE_PC);
+
+    DSP_DEBUG_BREAK_IF(lua_isnil(L, 1) || !lua_isnumber(L, 1));
+
+    CCharEntity * PChar = (CCharEntity*)m_PBaseEntity;
+    uint16 objectiveID = (uint16)lua_tointeger(L, 1);
+
+    if (objectiveID < MAX_ROE_QUESTS)
+    {
+        charutils::DeleteROEObjective(PChar, objectiveID);
+    }
+    else
+    {
+        ShowError(CL_RED"Lua::delROE: ObjectiveID %i is invalid\n" CL_RESET, objectiveID);
+    }
+    return 0;
+}
+
+/************************************************************************
+*  Function: getROEStatus()
+*  Purpose : Gets the current ROE status of the input objective
+*  Example : player:getROEStatus(FIRST_STEP_FORWARD)
+*  Notes   : Returns whether or not the ROE objective is active
+************************************************************************/
+
+inline int32 CLuaBaseEntity::getROEStatus(lua_State * L)
+{
+    DSP_DEBUG_BREAK_IF(m_PBaseEntity == nullptr);
+    DSP_DEBUG_BREAK_IF(m_PBaseEntity->objtype != TYPE_PC);
+
+    DSP_DEBUG_BREAK_IF(lua_isnil(L, 1) || !lua_isnumber(L, 1));
+
+    CCharEntity* PChar = (CCharEntity*)m_PBaseEntity;
+    uint16 objectiveID = (uint16)lua_tointeger(L, 1);
+    
+    if (objectiveID < MAX_ROE_QUESTS)
+    {
+
+        uint8 current = 0;
+
+        uint8 slot = 0;
+
+        while (slot < MAX_ROE_ACTIVE && PChar->m_roe_current[slot].objectiveID != 0) {      // loop while we're in the current list range and quest hasn't been deleted or found yet
+            if (PChar->m_roe_current[slot].objectiveID == objectiveID) {                    // found the quest in the list
+                current = 1;
+            }
+            ++slot;
+        }
+        lua_pushinteger(L, (PChar->m_roe_complete[objectiveID] ? 2 : (current != 0 ? 1 : 0)));
+        return 1;
+    }
+    else
+    {
+        ShowError(CL_RED"Lua::getROEStatus: ObjectiveID %i is invalid\n" CL_RESET, objectiveID);
+    }
+    lua_pushnil(L);
+    return 1;
+}
+
+/************************************************************************
+*  Function: hasCompletedROE()
+*  Purpose : Returns true if a player has completed an ROE objective
+*  Example : if (player:hasCompletedROE(FIRST_STEP_FORWARD)) then
+************************************************************************/
+
+inline int32 CLuaBaseEntity::hasCompletedROE(lua_State * L)
+{
+    DSP_DEBUG_BREAK_IF(m_PBaseEntity == nullptr);
+    DSP_DEBUG_BREAK_IF(m_PBaseEntity->objtype != TYPE_PC);
+
+    DSP_DEBUG_BREAK_IF(lua_isnil(L, 1) || !lua_isnumber(L, 1));
+
+    CCharEntity* PChar = (CCharEntity*)m_PBaseEntity;
+    uint16 objectiveID = (uint16)lua_tointeger(L, 1);
+
+    if (objectiveID < MAX_ROE_QUESTS)
+    {
+        lua_pushboolean(L, (PChar->m_roe_complete[objectiveID]));
+        return 1;
+    }
+    ShowError(CL_RED"Lua::hasCompletedROE: ObjectiveID %i is invalid\n" CL_RESET, objectiveID);
+    lua_pushboolean(L, false);
+    return 1;
+}
+
+/************************************************************************
+*  Function: completeROE()
+*  Purpose : Completes a current ROE objective for the player
+*  Example : player:completeROE(FIRST_STEP_FORWARD)
+*  Notes   :
+************************************************************************/
+
+inline int32 CLuaBaseEntity::completeROE(lua_State * L)
+{
+    DSP_DEBUG_BREAK_IF(m_PBaseEntity == nullptr);
+    DSP_DEBUG_BREAK_IF(m_PBaseEntity->objtype != TYPE_PC);
+
+    DSP_DEBUG_BREAK_IF(lua_isnil(L, 1) || !lua_isnumber(L, 1));
+
+    CCharEntity * PChar = (CCharEntity*)m_PBaseEntity;
+    uint16 objectiveID = (uint16)lua_tointeger(L, 1);
+
+    if (objectiveID < MAX_ROE_QUESTS)
+    {
+        if (!PChar->m_roe_complete[objectiveID])
+        {
+            ShowDebug(CL_CYAN"Lua::completeROE: Executing charutils::CompleteROEObjective for ObjectiveID %i\n" CL_RESET, objectiveID);
+            charutils::CompleteROEObjective(PChar, objectiveID);
+        }
+        else
+        {
+            ShowError(CL_RED"Lua::completeROE: ObjectiveID %i is already completed\n" CL_RESET, objectiveID);
+        }
+    }
+    else
+    {
+        ShowError(CL_RED"Lua::completeROE: ObjectiveID %i is invalid\n" CL_RESET, objectiveID);
+    }
+    return 0;
+}
+
+/************************************************************************
 *  Function: addMission()
 *  Purpose : Adds a mission to the player's mission log
 *  Example : player:addMission(SANDORIA,JOURNEY_TO_BASTOK)
@@ -14512,6 +14643,11 @@ Lunar<CLuaBaseEntity>::Register_t CLuaBaseEntity::methods[] =
     LUNAR_DECLARE_METHOD(CLuaBaseEntity,getQuestStatus),
     LUNAR_DECLARE_METHOD(CLuaBaseEntity,hasCompletedQuest),
     LUNAR_DECLARE_METHOD(CLuaBaseEntity,completeQuest),
+
+    LUNAR_DECLARE_METHOD(CLuaBaseEntity,delROE),
+    LUNAR_DECLARE_METHOD(CLuaBaseEntity,getROEStatus),
+    LUNAR_DECLARE_METHOD(CLuaBaseEntity,hasCompletedROE),
+    LUNAR_DECLARE_METHOD(CLuaBaseEntity,completeROE),
 
     LUNAR_DECLARE_METHOD(CLuaBaseEntity,addMission),
     LUNAR_DECLARE_METHOD(CLuaBaseEntity,delMission),
