@@ -6111,6 +6111,34 @@ inline int32 CLuaBaseEntity::completeQuest(lua_State *L)
 }
 
 /************************************************************************
+*  Function: addROE()
+*  Purpose : Adds a new ROE objective to the character's current objectives list
+*  Example : player:addROE(FIRST_STEP_FORWARD)
+*  Notes   :
+************************************************************************/
+
+inline int32 CLuaBaseEntity::addROE(lua_State* L)
+{
+    DSP_DEBUG_BREAK_IF(m_PBaseEntity == nullptr);
+    DSP_DEBUG_BREAK_IF(m_PBaseEntity->objtype != TYPE_PC);
+
+    DSP_DEBUG_BREAK_IF(lua_isnil(L, 1) || !lua_isnumber(L, 1));
+
+    CCharEntity * PChar = (CCharEntity*)m_PBaseEntity;
+    uint16 objectiveID = (uint16)lua_tointeger(L, 1);
+
+    if (objectiveID < MAX_ROE_QUESTS)
+    {
+        charutils::AddROEObjective(PChar, objectiveID);
+    }
+    else
+    {
+        ShowError(CL_RED"Lua::addROE: ObjectiveID %i is invalid\n" CL_RESET, objectiveID);
+    }
+    return 0;
+}
+
+/************************************************************************
 *  Function: delROE()
 *  Purpose : Deletes an ROE objective from a character's current objectives list
 *  Example : player:delROEObjective(FIRST_STEP_FORWARD)
@@ -14644,6 +14672,8 @@ Lunar<CLuaBaseEntity>::Register_t CLuaBaseEntity::methods[] =
     LUNAR_DECLARE_METHOD(CLuaBaseEntity,hasCompletedQuest),
     LUNAR_DECLARE_METHOD(CLuaBaseEntity,completeQuest),
 
+    // Records of Eminence
+    LUNAR_DECLARE_METHOD(CLuaBaseEntity,addROE),
     LUNAR_DECLARE_METHOD(CLuaBaseEntity,delROE),
     LUNAR_DECLARE_METHOD(CLuaBaseEntity,getROEStatus),
     LUNAR_DECLARE_METHOD(CLuaBaseEntity,hasCompletedROE),

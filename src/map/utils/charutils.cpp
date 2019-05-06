@@ -4937,38 +4937,35 @@ namespace charutils
             bool   active = false;                                          // boolean flag for when quest is found or assigned to list
 
             while (slot < MAX_ROE_ACTIVE && !active) {                      // loop while we're in the current list range and quest hasn't been added or found yet
-                ShowDebug(CL_CYAN"StartROEObjective: While loop (re-)entry, slot counter = %i\n" CL_RESET, slot);
+                //ShowDebug(CL_CYAN"AddROEObjective: While loop (re-)entry, slot counter = %i\n" CL_RESET, slot);
                 if (PChar->m_roe_current[slot].objectiveID == objectiveID) {// found the quest already in the list, display an error message
-                    ShowError(CL_RED"StartROEObjective: ROE ObjectiveID %i is already active\n" CL_RESET, objectiveID);
+                    ShowError(CL_RED"AddROEObjective: ROE ObjectiveID %i is already active\n" CL_RESET, objectiveID);
                     active = true;                                          // flag it active and exit loop
                 }
                 if (PChar->m_roe_current[slot].objectiveID == 0)            // position is empty
                 {
-                    ShowDebug(CL_CYAN"StartROEObjective: Found empty slot %i in ROE current list\n" CL_RESET, slot);
+                    //ShowDebug(CL_CYAN"AddROEObjective: Found empty slot %i in ROE current list\n" CL_RESET, slot);
                     PChar->m_roe_current[slot].objectiveID = objectiveID;   // add ROE quest to this position
-                    ShowDebug(CL_CYAN"StartROEObjective: Assigning objective %i to slot %i\n" CL_RESET, objectiveID, slot);
                     PChar->m_roe_current[slot].progress = 0;                // initialize ROE quest progress to zero
-                    ShowDebug(CL_CYAN"StartROEObjective: Setting objective progress to zero in slot %i\n" CL_RESET, slot);
-                    ShowDebug(CL_CYAN"StartROEObjective: ROE current objective slot %i is now objective %i progress %i\n" CL_RESET, slot, PChar->m_roe_current[slot].objectiveID, PChar->m_roe_current[slot].progress);
-                    ShowDebug(CL_CYAN"StartROEObjective: Sending CMessageBasicPacket 0x029\n" CL_RESET);
+                    ShowDebug(CL_CYAN"AddROEObjective: ROE objective %i progress %i is now assigned to slot %i\n" CL_RESET, PChar->m_roe_current[slot].objectiveID, PChar->m_roe_current[slot].progress, slot);
+                    //ShowDebug(CL_CYAN"AddROEObjective: Sending CMessageBasicPacket 0x029\n" CL_RESET);
                     PChar->pushPacket(new CMessageBasicPacket(PChar, PChar, objectiveID, 0, 704)); // display message to client about objective being started
-                    ShowDebug(CL_CYAN"StartROEObjective: Sending CROECurrentPacket 0x111\n" CL_RESET);
+                    //ShowDebug(CL_CYAN"AddROEObjective: Sending CROECurrentPacket 0x111\n" CL_RESET);
                     PChar->pushPacket(new CROECurrentPacket(PChar));        // push a packet update to the client with the updated list
                     charutils::SaveROECurrent(PChar);
-                    charutils::SaveROEComplete(PChar);
                     active = true;                                          // flag it active and exit loop
                 }
                 ++slot;
-                ShowDebug(CL_CYAN"StartROEObjective: Slot counter incremented to %i\n" CL_RESET, slot);
+                //ShowDebug(CL_CYAN"AddROEObjective: Slot counter incremented to %i\n" CL_RESET, slot);
             }
-            ShowDebug(CL_CYAN"StartROEObjective: While loop exited with slot counter at %i\n" CL_RESET, slot);
+            //ShowDebug(CL_CYAN"AddROEObjective: While loop exited with slot counter at %i\n" CL_RESET, slot);
             if (slot == MAX_ROE_ACTIVE && !active)                          // if we went all the way through the loop and we hit the last slot but didn't find an empty slot
                                                                             // or the quest already in the list, then the list is full and we show an error
-                ShowError(CL_RED"StartROEObjective: ROE Current Objective List is full\n" CL_RESET);
+                ShowError(CL_RED"AddROEObjective: ROE Current Objective List is full\n" CL_RESET);
         }
         else
         {
-            ShowError(CL_RED"StartROEObjective: ROE ObjectiveID %i is invalid\n" CL_RESET, objectiveID);
+            ShowError(CL_RED"AddROEObjective: ROE ObjectiveID %i is invalid\n" CL_RESET, objectiveID);
         }
         return;
     }
@@ -4977,49 +4974,43 @@ namespace charutils
     {
         if (objectiveID < MAX_ROE_QUESTS)
         {
-            uint8  slot = 0;                                            // initialize loop index variable
-            uint8  i = 0;
-            bool   deleted = false;                                     // boolean flag for when quest is found or assigned to list
+            uint8  slot = 0;        // loop index variable
+            uint8  i = 0;           // second loop index variable
+            bool   found = false;   // flag used to exit loop
 
-            while (slot < MAX_ROE_ACTIVE && PChar->m_roe_current[slot].objectiveID != 0 && !deleted) {                 // loop while in range, the quest hasn't been deleted yet, and we haven't reached the end of the list
-                ShowDebug(CL_CYAN"CancelROEObjective: While loop (re-)entry, slot counter = %i\n" CL_RESET, slot);
-                if (PChar->m_roe_current[slot].objectiveID == objectiveID) {    // found the quest in the list
-                    ShowDebug(CL_CYAN"CancelROEObjective: Found ROE Objective ID %i at slot %i\n" CL_RESET, objectiveID, slot);
+            while (slot < MAX_ROE_ACTIVE && PChar->m_roe_current[slot].objectiveID != 0 && !found) {
+                if (PChar->m_roe_current[slot].objectiveID == objectiveID) {
+                    // found the quest in the list
+                    found = true;
+                    ShowDebug(CL_CYAN"DeleteROEObjective: Found ROE Objective ID %i at slot number %i\n" CL_RESET, objectiveID, slot);
                     i = slot;
-                    while (i < (MAX_ROE_ACTIVE - 1) && PChar->m_roe_current[i+1].objectiveID != 0) {     // shift remaining non-zero items in the list up one position
-                        ShowDebug(CL_CYAN"CancelROEObjective: While: Shifting: Shifting objective ID %i from slot %i to slot %i\n" CL_RESET, PChar->m_roe_current[i + 1].objectiveID, i + 1, i);
+                    // shift remaining non-zero objectives, if any, up one position, overwriting our found value
+                    while (i < (MAX_ROE_ACTIVE - 1) && PChar->m_roe_current[i+1].objectiveID != 0) {
+                        ShowDebug(CL_CYAN"DeleteROEObjective: While: Shifting objective ID %i from slot number %i to slot number %i\n" CL_RESET, PChar->m_roe_current[i + 1].objectiveID, i + 1, i);
                         PChar->m_roe_current[i].objectiveID = PChar->m_roe_current[i + 1].objectiveID;
-                        ShowDebug(CL_CYAN"CancelROEObjective: While: Shifting: Shifting progress %i from slot %i to slot %i\n" CL_RESET, PChar->m_roe_current[i + 1].progress, i + 1, i);
+                        ShowDebug(CL_CYAN"DeleteROEObjective: While: Shifting progress %i from slot number %i to slot number %i\n" CL_RESET, PChar->m_roe_current[i + 1].progress, i + 1, i);
                         PChar->m_roe_current[i].progress = PChar->m_roe_current[i + 1].progress;
-                        if (i == (MAX_ROE_ACTIVE - 1)) {               // if we're in the last slot, just clear the data to zero
-                        }
                         i++;
                     }
-                    ShowDebug(CL_CYAN"CancelROEObjective: While: Shifting: loop exited with slot counter at %i\n" CL_RESET, i);
-                    // The last position 'i' is in now contains the same objectiveID/progress info as the slot before it
-                    // So we clear slot 'i' to zero.
-                    ShowDebug(CL_CYAN"CancelROEObjective: While: Shifting: Last slot %i clearing objective ID and progress to 0\n" CL_RESET, i);
+                    ShowDebug(CL_CYAN"DeleteROEObjective: Shift complete. Erasing dupe objective ID in slot number %i\n" CL_RESET, i);
+                    // if nothing shifted, clear the found objective position to zero
+                    // if objectives were shifted, this clears the last item in the list to zero
+                    // (which is a dupe of the one before it at this point)
                     PChar->m_roe_current[i].objectiveID = 0;
                     PChar->m_roe_current[i].progress = 0;
-
-                    ShowDebug(CL_CYAN"CancelROEObjective: While: deletion of ROE objective from current list is completed\n" CL_RESET);
-                    deleted = true;                                     // flag it deleted to exit loop
-
-                    ShowDebug(CL_CYAN"CancelROEObjective: Sending CROECurrentPacket 0x111\n" CL_RESET);
-                    PChar->pushPacket(new CROECurrentPacket(PChar));    // push a packet update back to the client with the updated list
-                    charutils::SaveROEComplete(PChar);
-                    charutils::SaveROECurrent(PChar);
                 }
                 ++slot;
             }
-            ShowDebug(CL_CYAN"CancelROEObjective: Exited while loop\n" CL_RESET);
-            if (slot == MAX_ROE_ACTIVE && !deleted)                     // if we went all the way through the loop and we hit the last slot but didn't find the quest
-                                                                        // show an error message
-                ShowError(CL_RED"CancelROEQuest: ROE QuestID %i is not active\n" CL_RESET, objectiveID);
+            if (slot == MAX_ROE_ACTIVE && !found)
+                ShowError(CL_RED"DeleteROEObjective: ROE QuestID %i is not active\n" CL_RESET, objectiveID);
+            else {
+                PChar->pushPacket(new CROECurrentPacket(PChar));    // push a packet update back to the client with the updated list
+                charutils::SaveROECurrent(PChar);
+            }
         }
         else
         {
-            ShowError(CL_RED"CancelROEQuest: ROE QuestID %i is invalid\n" CL_RESET, objectiveID);
+            ShowError(CL_RED"DeleteROEObjective: ROE QuestID %i is invalid\n" CL_RESET, objectiveID);
         }
         return;
     }
@@ -5033,9 +5024,10 @@ namespace charutils
             bool found = false;
             while (slot < MAX_ROE_ACTIVE && PChar->m_roe_current[slot].objectiveID != 0) {      // loop while we're in the current list range and we haven't found the end of the list
                 if (PChar->m_roe_current[slot].objectiveID == objectiveID) {                    // found the quest in the list
-                    ShowDebug(CL_CYAN"charutils::CompleteROEObjective: Found ROE objective ID %i\n" CL_RESET, objectiveID);
+                    ShowDebug(CL_CYAN"charutils::CompleteROEObjective: Found ROE objective ID %i in slot %i\n" CL_RESET, objectiveID, slot);
                     PChar->m_roe_complete[objectiveID] = true;                                  // set completion status in bitset
-                    ShowDebug(CL_CYAN"charutils::CompleteROEObjective: Objective ID %i set to %i\n" CL_RESET, objectiveID, PChar->m_roe_complete[objectiveID]);
+                    ShowDebug(CL_CYAN"charutils::CompleteROEObjective: Objective ID %i bit set to %i\n" CL_RESET, objectiveID, PChar->m_roe_complete[objectiveID]);
+                    //ShowDebug(CL_CYAN"charutils::CompleteROEObjective: Pushing out update packets\n" CL_RESET);
                     PChar->pushPacket(new CCharHealthPacket(PChar)); // 0x0DF
                     PChar->pushPacket(new CMenuMeritPacket(PChar)); // 0x063
                     PChar->pushPacket(new CCharStatsPacket(PChar)); // 0x061
@@ -5052,6 +5044,10 @@ namespace charutils
             }
             if (!found) {
                 ShowError(CL_RED"CompleteROEObjective: ROE Objective ID %i is not active\n" CL_RESET, objectiveID);
+            }
+            else {
+                charutils::SaveROECurrent(PChar);
+                charutils::SaveROEComplete(PChar);
             }
         }
         return;

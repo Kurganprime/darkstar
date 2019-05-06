@@ -5917,24 +5917,24 @@ void SmallPacket0x10B(map_session_data_t* session, CCharEntity* PChar, CBasicPac
 }
 
 /************************************************************************
-*                                                                        *
-*  Start Records of Eminence Quest                                       *
-*                                                                        *
+*                                                                       *
+*  Start Records of Eminence Quest                                      *
+*                                                                       *
 ************************************************************************/
 
 void SmallPacket0x10C(map_session_data_t* session, CCharEntity* PChar, CBasicPacket data)
 {
     uint16 objectiveID = data.ref<uint16>(0x04);
 
-    ShowDebug(CL_CYAN"SmallPacket0x10C: Start ROE Objective ID %i request received\n" CL_RESET, objectiveID);
+    //ShowDebug(CL_CYAN"SmallPacket0x10C: Start ROE Objective ID %i request received\n" CL_RESET, objectiveID);
     charutils::AddROEObjective(PChar, objectiveID);
     return;
 }
 
 /************************************************************************
-*                                                                        *
-*  Cancel Records of Eminence Quest                                      *
-*                                                                        *
+*                                                                       *
+*  Cancel Records of Eminence Quest                                     *
+*                                                                       *
 ************************************************************************/
 
 void SmallPacket0x10D(map_session_data_t* session, CCharEntity* PChar, CBasicPacket data)
@@ -5942,7 +5942,7 @@ void SmallPacket0x10D(map_session_data_t* session, CCharEntity* PChar, CBasicPac
     // TODO: write code that removes ROE quest from PChar structure and saves to MySQL
     uint16 objectiveID = data.ref<uint16>(0x04);
 
-    ShowDebug(CL_CYAN"SmallPacket0x10D: Cancel ROE Objective ID %i request received\n" CL_RESET, objectiveID);
+    //ShowDebug(CL_CYAN"SmallPacket0x10D: Cancel ROE Objective ID %i request received\n" CL_RESET, objectiveID);
     charutils::DeleteROEObjective(PChar, objectiveID);
     return;
 }
