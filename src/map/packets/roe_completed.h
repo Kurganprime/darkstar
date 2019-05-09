@@ -38,11 +38,11 @@
 
 class CCharEntity;
 
-class CROECompletePacket : public CBasicPacket
+class CROECompletedPacket : public CBasicPacket
 {
 public:
 
-    CROECompletePacket(std::bitset<1024> bitslice, uint8 sequence);
+    CROECompletedPacket(std::bitset<1024> bitslice, uint8 sequence);
 
 private:
 

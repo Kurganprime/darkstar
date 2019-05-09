@@ -64,7 +64,7 @@ This file is part of DarkStar-server source code.
 #include "../packets/message_special.h"
 #include "../packets/message_standard.h"
 #include "../packets/quest_mission_log.h"
-#include "../packets/roe_complete.h"
+#include "../packets/roe_completed.h"
 #include "../packets/roe_current.h"
 #include "../packets/server_ip.h"
 #include "../packets/sparks_update.h"
@@ -361,7 +361,7 @@ namespace charutils
             "isstylelocked,"        // 26
             "moghancement,"         // 27
             "roe_current,"          // 28
-            "roe_complete "       // 29
+            "roe_completed "        // 29
             "FROM chars "
             "WHERE charid = %u";
 
@@ -447,9 +447,9 @@ namespace charutils
             memcpy(&PChar->m_roe_current, roe_current, (length > sizeof(PChar->m_roe_current) ? sizeof(PChar->m_roe_current) : length));
 
             length = 0;
-            char* roe_complete = nullptr;
-            Sql_GetData(SqlHandle, 29, &roe_complete, &length);
-            memcpy(&PChar->m_roe_complete, roe_complete, (length > sizeof(PChar->m_roe_complete) ? sizeof(PChar->m_roe_complete) : length));
+            char* roe_completed = nullptr;
+            Sql_GetData(SqlHandle, 29, &roe_completed, &length);
+            memcpy(&PChar->m_roe_completed, roe_completed, (length > sizeof(PChar->m_roe_completed) ? sizeof(PChar->m_roe_completed) : length));
             
         }
 
@@ -1096,8 +1096,8 @@ namespace charutils
         std::bitset<1024> bitslice;
         for (uint8 sequence = 0; sequence < (MAX_ROE_QUESTS/1024); ++sequence)
         {
-            std::bitset<1024> bitslice(PChar->m_roe_complete.to_string().substr((PChar->m_roe_complete.to_string().length() - (1024 * (sequence + 1))), 1024));
-            PChar->pushPacket(new CROECompletePacket(bitslice, sequence));
+            std::bitset<1024> bitslice(PChar->m_roe_completed.to_string().substr((PChar->m_roe_completed.to_string().length() - (1024 * (sequence + 1))), 1024));
+            PChar->pushPacket(new CROECompletedPacket(bitslice, sequence));
         }
     }
 
@@ -3860,14 +3860,14 @@ namespace charutils
         const char* Query =
             "UPDATE chars "
             "SET "
-            "roe_complete = '%s' "
+            "roe_completed = '%s' "
             "WHERE charid = %u;";
 
-        char roe_complete[sizeof(PChar->m_roe_complete) * 2 + 1];
-        Sql_EscapeStringLen(SqlHandle, roe_complete, (const char*)&PChar->m_roe_complete, sizeof(PChar->m_roe_complete));
+        char roe_completed[sizeof(PChar->m_roe_completed) * 2 + 1];
+        Sql_EscapeStringLen(SqlHandle, roe_completed, (const char*)&PChar->m_roe_completed, sizeof(PChar->m_roe_completed));
 
         Sql_Query(SqlHandle, Query,
-            roe_complete,
+            roe_completed,
             PChar->id);
     }
     
@@ -5023,8 +5023,8 @@ namespace charutils
             while (slot < MAX_ROE_ACTIVE && PChar->m_roe_current[slot].objectiveID != 0) {      // loop while we're in the current list range and we haven't found the end of the list
                 if (PChar->m_roe_current[slot].objectiveID == objectiveID) {                    // found the quest in the list
                     ShowDebug(CL_CYAN"charutils::CompleteROEObjective: Found ROE objective ID %i in slot %i\n" CL_RESET, objectiveID, slot);
-                    PChar->m_roe_complete[objectiveID] = true;                                  // set completion status in bitset
-                    ShowDebug(CL_CYAN"charutils::CompleteROEObjective: Objective ID %i bit set to %i\n" CL_RESET, objectiveID, PChar->m_roe_complete[objectiveID]);
+                    PChar->m_roe_completed[objectiveID] = true;                                  // set completion status in bitset
+                    ShowDebug(CL_CYAN"charutils::CompleteROEObjective: Objective ID %i bit set to %i\n" CL_RESET, objectiveID, PChar->m_roe_completed[objectiveID]);
                     //ShowDebug(CL_CYAN"charutils::CompleteROEObjective: Pushing out update packets\n" CL_RESET);
                     PChar->pushPacket(new CCharHealthPacket(PChar)); // 0x0DF
                     PChar->pushPacket(new CMenuMeritPacket(PChar)); // 0x063

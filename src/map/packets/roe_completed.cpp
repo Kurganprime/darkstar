@@ -25,10 +25,10 @@
 
 #include <string.h>
 
-#include "roe_complete.h"
+#include "roe_completed.h"
 #include "../entities/charentity.h"
 
-CROECompletePacket::CROECompletePacket(std::bitset<1024> bitslice, uint8 sequence)
+CROECompletedPacket::CROECompletedPacket(std::bitset<1024> bitslice, uint8 sequence)
 {
     this->type = 0x12;
     this->size = 0x45;

@@ -169,7 +169,7 @@ public:
 
     // begin vars for Records of Eminence                   // volatile data here until mysql code is completed
     roe_current_t           m_roe_current[MAX_ROE_ACTIVE];  // Records of Eminence current objectives list
-    std::bitset<4096>       m_roe_complete;                 // Records of Eminence completed objectives list
+    std::bitset<4096>       m_roe_completed;                // Records of Eminence completed objectives list
     // end   vars for Records of Eminence
 
     jobs_t					jobs;							// доступрые профессии персонажа

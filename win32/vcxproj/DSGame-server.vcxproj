@@ -393,7 +393,7 @@
     <ClInclude Include="..\..\src\map\packets\message_text.h" />
     <ClInclude Include="..\..\src\map\packets\party_effects.h" />
     <ClInclude Include="..\..\src\map\packets\release_special.h" />
-    <ClInclude Include="..\..\src\map\packets\roe_complete.h" />
+    <ClInclude Include="..\..\src\map\packets\roe_completed.h" />
     <ClInclude Include="..\..\src\map\packets\roe_current.h" />
     <ClInclude Include="..\..\src\map\packets\sparks_update.h" />
     <ClInclude Include="..\..\src\map\packets\status_effects.h" />
@@ -645,7 +645,7 @@
     <ClCompile Include="..\..\src\map\packets\message_text.cpp" />
     <ClCompile Include="..\..\src\map\packets\party_effects.cpp" />
     <ClCompile Include="..\..\src\map\packets\release_special.cpp" />
-    <ClCompile Include="..\..\src\map\packets\roe_complete.cpp" />
+    <ClCompile Include="..\..\src\map\packets\roe_completed.cpp" />
     <ClCompile Include="..\..\src\map\packets\roe_current.cpp" />
     <ClCompile Include="..\..\src\map\packets\sparks_update.cpp" />
     <ClCompile Include="..\..\src\map\packets\status_effects.cpp" />

@@ -6196,7 +6196,7 @@ inline int32 CLuaBaseEntity::getROEStatus(lua_State * L)
             }
             ++slot;
         }
-        lua_pushinteger(L, (PChar->m_roe_complete[objectiveID] ? 2 : (current != 0 ? 1 : 0)));
+        lua_pushinteger(L, (PChar->m_roe_completed[objectiveID] ? 2 : (current != 0 ? 1 : 0)));
         return 1;
     }
     else
@@ -6225,7 +6225,7 @@ inline int32 CLuaBaseEntity::hasCompletedROE(lua_State * L)
 
     if (objectiveID < MAX_ROE_QUESTS)
     {
-        lua_pushboolean(L, (PChar->m_roe_complete[objectiveID]));
+        lua_pushboolean(L, (PChar->m_roe_completed[objectiveID]));
         return 1;
     }
     ShowError(CL_RED"Lua::hasCompletedROE: ObjectiveID %i is invalid\n" CL_RESET, objectiveID);
@@ -6252,7 +6252,7 @@ inline int32 CLuaBaseEntity::completeROE(lua_State * L)
 
     if (objectiveID < MAX_ROE_QUESTS)
     {
-        if (!PChar->m_roe_complete[objectiveID])
+        if (!PChar->m_roe_completed[objectiveID])
         {
             ShowDebug(CL_CYAN"Lua::completeROE: Executing charutils::CompleteROEObjective for ObjectiveID %i\n" CL_RESET, objectiveID);
             charutils::CompleteROEObjective(PChar, objectiveID);
