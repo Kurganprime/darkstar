@@ -21,8 +21,8 @@
 ===========================================================================
 */
 
-#ifndef _CEMINENCEUPDATEPACKET_H
-#define _CEMINENCEUPDATEPACKET_H
+#ifndef _CROECURRENTPACKET_H
+#define _CROECURRENTPACKET_H
 
 #include "../../common/cbasetypes.h"
 #include <unordered_map>

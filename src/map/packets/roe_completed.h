@@ -21,8 +21,8 @@
 ===========================================================================
 */
 
-#ifndef _CROEQUESTLOGPACKET_H
-#define _CROEQUESTLOGPACKET_H
+#ifndef _CROECOMPLETEDPACKET_H
+#define _CROECOMPLETEDPACKET_H
 
 #include "../../common/cbasetypes.h"
 #include <unordered_map>
